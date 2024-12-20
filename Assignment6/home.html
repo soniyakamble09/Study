@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vertical Menu with CSS</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Underlined menu items */
+    .nav-pills .nav-link {
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+    }
+    .nav-pills .nav-link.active {
+      border-bottom: 2px solid #007bff;
+      background-color: transparent;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container mt-4">
+  <div class="row">
+    <!-- Vertical Menu -->
+    <div class="col-md-3">
+      <ul class="nav flex-column nav-pills">
+        <li class="nav-item">
+          <a class="nav-link active" id="home-tab" data-toggle="pill" href="#home">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="about-tab" data-toggle="pill" href="#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="services-tab" data-toggle="pill" href="#services">Services</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="contact-tab" data-toggle="pill" href="#contact">Contact</a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Content Section -->
+    <div class="col-md-9">
+      <div class="tab-content">
+        <!-- Home Content -->
+        <div class="tab-pane fade show active" id="home">
+          <h2>Home</h2>
+          <p>Welcome to the homepage. Here is some introductory content.</p>
+        </div>
+        <!-- About Content -->
+        <div class="tab-pane fade" id="about">
+          <h2>About</h2>
+          <p>This is the about section. Learn more about us here.</p>
+        </div>
+        <!-- Services Content -->
+        <div class="tab-pane fade" id="services">
+          <h2>Services</h2>
+          <p>Here are the services we offer.</p>
+        </div>
+        <!-- Contact Content -->
+        <div class="tab-pane fade" id="contact">
+          <h2>Contact</h2>
+          <p>Get in touch with us through the contact page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS and dependencies (Optional) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

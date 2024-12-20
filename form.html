@@ -1,0 +1,91 @@
+<html>
+	<head>
+		<title>Form Element</title>
+	</head>
+	<body>
+		<form method="POST" enctype="multipart/form-data">
+			<fieldset>
+				<legend>Student Information</legend>
+				<table>
+					<tr>
+						<td><label for="sname">Name: </label></td>
+						<td><input type="text" id="sname" name="sname" placeholder="Enter your name" value="Soniya" required /></td>
+					</tr>
+					<tr>
+						<td><label for="rno">Roll No.: </label></td>
+						<td><input type="number" id="rno" name="rno" placeholder="Enter your Roll No." required /></td>
+					</tr>
+					<tr>
+						<td><label for="dob">DOB.: </label></td>
+						<td><input type="date" id="dob" name="dob" placeholder="Enter your Date of Birth" required /></td>
+					</tr>
+					<tr>
+						<td><label for="gender">Gender: </label></td>
+						<td><input type="radio" id="male" name="gender" value="M" required /> <label for="male"> Male </label>
+							<input type="radio" id="female" name="gender" value="F" required /> <label for="female"> Female </label>
+						</td>
+					</tr>
+					<tr>
+						<td><label for="mail">Username: </label></td>
+						<td><input type="email" id="mail" name="mail" placeholder="Enter your Email" required /></td>
+					</tr>
+					<tr>
+						<td><label for="pwd">Passowrd: </label></td>
+						<td><input type="password" id="pwd" name="pwd" placeholder="Enter your Password" required /></td>
+					</tr>
+					<tr>
+						<td><label for="sfile">Upload profile picture: </label></td>
+						<td><input type="file" id="sfile" name="sfile" placeholder="Upload profile picture" required /></td>
+					</tr>
+					<tr>
+						<td><label for="mfile">Upload multiple files: </label></td>
+						<td><input type="file" id="mfile" name="mfile" placeholder="Upload multiple files" multiple required /></td>
+					</tr>
+					<tr>
+						<td><label for="sclass">Select Class: </label></td>
+						<td><select id="sclass" name="sclass" required>
+							<option value="1">First Year</option>
+							<option value="2">Second Year</option>
+							<option value="3">Third Year</option>
+							<option value="4">Final Year</option>
+						</select>
+						</td>
+					</tr>
+					<tr>
+						<td><label for="sub">Select Course: </label></td>
+						<td><select id="sub" name="sub" required multiple>
+							<option value="1">HTML</option>
+							<option value="2">SQL</option>
+							<option value="3">Python</option>
+							<option value="4">Angular</option>
+						</select>
+						</td>
+					</tr>
+					<tr>
+						<td><label for="loc">Select preferred job locations: </label></td>
+						<td><input type="checkbox" id="mumbai" name="loc" value="M" required /> <label for="mumbai"> Mumbai </label>
+							<input type="checkbox" id="navimumbai" name="loc" value="NM" required /> <label for="navimumbai"> Navi Mumbai </label>
+							<input type="checkbox" id="pune" name="loc" value="P" required /> <label for="pune"> Pune </label>
+							<input type="checkbox" id="bangalore" name="loc" value="B" required /> <label for="bangalore"> Bangalore </label>
+						</td>
+					</tr>
+					<tr>
+						<td><label for="add">Address:</label></td>
+						<td><textarea name="add" cols="20" rows="5"></textarea></td>
+					</tr>
+					<tr>
+						<td><label for="uid">User ID:</label></td>
+						<td><input type="text" name="uid" value="201" readonly /></td>
+					</tr>
+					<tr>
+						<td><label for="ukey">User Key:</label></td>
+						<td><input type="hidden" name="ukey" value="201"  /></td>
+					</tr>
+					<tr>
+						<td colspan="2" align="center"><input type="submit" name="Send" /></td>
+					</tr>
+				</table>
+			</fieldset>
+		</form>
+	</body>
+</html>

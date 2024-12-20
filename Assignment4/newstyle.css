@@ -1,0 +1,26 @@
+html, body {
+  height: 100%;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: smaller;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column; 
+  justify-content: flex-start; 
+  align-items: center; 
+  height: 100vh; 
+}
+
+.scrollable-div {
+  margin-top: 50px;
+  position: fixed;
+  width: 30%; 
+  height: 50%;
+  overflow: auto; 
+  border: 1px solid #ccc; 
+  padding: 10px;
+  background-color: lightgrey;
+}
+

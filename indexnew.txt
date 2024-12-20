@@ -1,0 +1,1034 @@
+var serverUrl="http://192.168.45.55:8082";
+var screenCode="SC5";
+var token="";
+var mediaFilesJson="";
+var iframe = "";
+
+// List
+var mediaUrlList = [];
+var mediaDownloadList = [];
+var mediaPlayList=[];
+/*var mediaPlayList = ["\\Repository\\Media\\a81496e2-b36c-45a6-b936-7af4fabb9760.png","\\Repository\\Media\\a81496e2-b36c-45a6-b936-7af4fabb9760.png","\\Repository\\Media\\af348464-d5b7-410a-bc5f-510a9dbfc686.jpg","\\Repository\\Media\\4cbd5f37-ac11-4b13-bd8d-54f04ec30d63.jpg","\\Repository\\Media\\229653ad-697b-4d14-8e1e-7671c7fcbd4c.png","\\Repository\\Media\\9ab88972-4ea5-4d64-9941-ba1b8b47be16.mp4"];*/
+var mediaFilesJsonDevice=[];
+var jsonmediaJsonArray=[];
+var mediaFileslist=[];
+
+var updatedPlayList=[];
+
+var oldMediaPlayList=[];
+var newMediaFileList=[];
+var fileListInternal=[];
+var mediaFilesJSonData=[];
+var files = ['play.html', 'play.js', 'play.css', 'play.jpg'];
+var imagelist = mediaFilesJson; // Assuming mediaFilesJson is your media list
+var jsonArrayMediaList=[];
+var currentIndex = 0; // Track the current media index
+// Flag
+flagIsMediaPlay=false;
+flagIsPlayListUpdated= false;
+
+
+var mediaPlayIndex = 0;
+var count = 0;
+
+isServerFilesExist = false;
+
+
+
+window.onload = async function set() {
+	debugger;
+ //step 1 check configuration txt.file 
+	 checkConfigFile();    //Read Config Data
+	
+	
+//await checkServerConfigFiles();
+//    
+//    if (isServerFilesExist) {
+//        console.log("\n Config file available");
+//     
+//        playFiles(); //Playmedia
+//    } else {
+//        console.log("\n Config File not available");
+//        downloadServerConfigFiles();
+//    }
+	
+ };
+ 
+ 
+//Step 1 Checking configuration file
+function checkConfigFile(){
+debugger
+idcap.request( "idcap://storage/file/read" , {
+				"parameters": {
+							     "path" : "file://internal/DSS/Configuration/Config.txt",
+							     "position" : 0,
+							 },
+				"onSuccess": function (cbObject) {
+							   
+							     var inputEditText = JSON.parse(cbObject.data);
+							     serverUrl=inputEditText.serverUrl;
+							     screenCode=inputEditText.screenCode;
+							  
+							  	document.getElementById('output1').textContent = "Config Details: " + serverUrl + " :: " + screenCode;
+							  	console.log(serverUrl);
+							  	console.log(screenCode);
+							  	//Token API Call
+							  	 reqToken();
+							  	 return true;
+							 },
+				"onFailure": function (error) {
+							     console.log("onFailure : errorMessage = " + error.errorMessage);
+							     document.getElementById('output2').textContent = "failed to read filedata"+error.errorMessage;
+							     return false;
+							 }
+							 
+								
+});}
+
+
+//API Call Token
+function reqToken() {
+	debugger
+	   document.getElementById('output2').textContent = "Resp Token - inside" ;
+		 const myHeaders = new Headers();
+		 myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+		 const urlencoded = new URLSearchParams();
+		 urlencoded.append("grant_type", "password");
+		 urlencoded.append("username", "admin");
+		 urlencoded.append("password", "password")
+		 urlencoded.append("MacAddress", "abchgsdhj");
+
+		 const requestOptions = {
+		   method: "POST",
+		   headers: myHeaders,
+		   body: urlencoded,
+		   redirect: "follow"
+		 };
+		  
+		 fetch(serverUrl+ "/token", requestOptions)
+		   .then(function(response) {
+			   
+			   responseStatus= response.status;
+			   return response.text();  
+			   
+		   })
+		  .then(function(result) {	
+			  
+			   var jsonObject = JSON.parse(result);
+			       token = jsonObject.token_type + " " + jsonObject.access_token
+		           //console.log(token);
+			       document.getElementById('output2').textContent = "Resp Token -> " + token;	
+			       reqGetMediaList();
+			      
+		   })    
+      
+}
+
+
+//API Call getMedia List 
+async function reqGetMediaList() {
+  debugger;
+//  if(mediaFilesJSonData==undefined){
+//		playFiles();
+//  }
+		    
+ try {
+	 
+	 const response = await fetch(serverUrl+"/ScreenPL/PL_Media" +"?ScreenCode=" + screenCode + "&_=abchgsdhj", {
+		   method: "GET",
+		   headers: { "Authorization": token }
+	 	   });
+
+	 
+	  if(response.status == 200){	 
+		  
+		  mediaUrlList.length = 0;
+		  const json = await response.json(); 
+		  //const json = mediaFilesJSonData;
+		  mediaFilesJson=json;
+		  //document.getElementById('output4').textContent = "jsondata is"+mediaFilesJson;
+		   mediaFileslist = mediaFilesJson.mediaList;
+		  //document.getElementById('output').textContent = "jsondatafile is " + JSON.stringify(mediaFileslist);		  
+		   jsonArrayMediaList = mediaFilesJson.mediaList;
+		  for (var i = 0; i < jsonArrayMediaList.length; i++) {
+			  //mediaUrlList.push(jsonArrayMediaList[i].mediaUrl + "," + jsonArrayMediaList[i].mediaType +  "," + jsonArrayMediaList[i].duration);
+			  mediaUrlList.push(jsonArrayMediaList[i].mediaUrl);
+		  	}
+		 	 //document.getElementById('output7').textContent = "mediaUrlList is"+mediaUrlList;
+		 	 
+		  document.getElementById('output').textContent = "mediaUrlList is  >"+mediaUrlList;
+	        	   	   
+	      if(mediaUrlList.length > 0){
+	 
+	       
+	       	if(!flagIsMediaPlay){
+	       				for(i = 0; i<mediaUrlList.length; i++ ){
+		  	        	mediaDownloadList.push(mediaUrlList[i]);
+		  	        		mediaPlayList.push(mediaUrlList[i]);	        	
+		  	        	}
+	       				downloadMediaFilesCheck();
+	       	 }else{
+	       	
+	       		 
+	       	
+	       	  document.getElementById('output').textContent = "mediaUrlList is  >"+mediaUrlList + "  ===> else";
+	       					// New media response list 
+	       	    document.getElementById('output15').textContent = "flagIsMediaPlay is set true >";
+	       		mediaDownloadList.length =0;
+	       		updatedPlayList.length= 0;
+	       		 
+	       		for(i = 0; i<mediaUrlList.length; i++ ){
+	  	        	 mediaDownloadList.push(mediaUrlList[i]);
+	  	        	 updatedPlayList.push(mediaUrlList[i]);	    
+	  	     	    document.getElementById('output15').textContent = "updatedPlayList is  >"+updatedPlayList;
+	  	        	}
+	       		 
+	       	/*	updatedPlayList*/
+	       	    document.getElementById('output20').textContent = "mediaPlayList is  >"+mediaPlayList;
+	       	    console.log(mediaPlayList);
+	       				
+	      if (Array.isArray(updatedPlayList)) {
+		  	        	    // Map through the array and replace the path in each string
+	       		newMediaFileList = updatedPlayList.map(function(item) {
+		  	        	        // Check if the current item is a string
+		  	        	 if (typeof item === 'string') {
+		  	        	     return item.replace(/\\Repository\\Media\\/g, "");
+		  	        	    } else {
+		  	        	        console.error('Item is not a string:', item);
+		  	        	      return item; 
+		  	        	        }
+		  	        	    });
+		  	        	    document.getElementById('output3').textContent = "newMediaFileList is"+newMediaFileList;
+		  	        	    console.log(newMediaFileList); 
+		  	        	  
+		  	        	} else {
+		  	        	    console.error('mediaPlayList is not an array');
+		  	        	}
+	       				
+	       			   
+	       				
+	       				
+	       				// Old media list
+	       			   if (Array.isArray(mediaPlayList)) {
+		  	        	    // Map through the array and replace the path in each string
+		  	    	oldMediaPlayList = mediaPlayList.map(function(item) {
+		  	        	      
+		  	        	        if (typeof item === 'string') {
+		  	        	            return item.replace(/\\Repository\\Media\\/g, "");
+		  	        	        } else {
+		  	        	            console.error('Item is not a string:', item);
+		  	        	            return item; // or you can choose to return a default value or skip this item
+		  	        	        }
+		  	        	    });
+		  	        	    document.getElementById('output4').textContent = "oldMediaPlayList is"+oldMediaPlayList;
+		  	        	    console.log(oldMediaPlayList); 
+		  	        	  
+		  	        	} else {
+		  	        	    console.error('mediaPlayList is not an array');
+		  	        	}
+	       			
+	       			   
+	       			   // Compare new and old list
+	       			   
+	       			   //1. Get new element in list
+	       			   var newElements=[];
+	       			   var newDeletedElements=[];
+	       			   
+	       			   for (var j = 0; j < newMediaFileList.length; j++) {
+	       				   if (oldMediaPlayList.indexOf(newMediaFileList[j]) === -1) {
+	       		            newElements.push(newMediaFileList[j]);
+	       		            console.log(newElements);
+	       				   }
+	       				  
+	       				
+	       			  document.getElementById('output17').textContent = "newElements  is "+newElements;
+	       			   }
+	       			   
+	       			   
+	       			if(newElements.length>0){
+	       				mediaDownloadList.length = 0;
+       					mediaDownloadList=newElements;           //Updating MediadownloadList
+       				  } 
+	       			   
+	       		    console.log(mediaDownloadList);
+	       		 console.log("newMediaFileList" +newMediaFileList);
+	       		 //document.getElementById('output7').textContent = "newElements are"+newElements;
+	       			   var newDeleteMediaList = [];
+	       			   for (var j = 0; j < oldMediaPlayList.length; j++) {
+	       				   if (newMediaFileList.indexOf(oldMediaPlayList[j]) === -1) {
+	       					newDeleteMediaList.push(oldMediaPlayList[j]);
+	       				   }
+	       			   }	       			   
+	       			
+	       			 //document.getElementById('output6').textContent = "newDeletedElements are"+newDeletedElements;
+	       			 console.log(newDeleteMediaList);
+	       			 
+	       			 
+	       		
+	       			 
+	       			 if(newDeleteMediaList.length > 0){ 
+	       				flagIsPlayListUpdated = true;
+	       				downloadMediaInDevice();	 
+	       			 }else if(newDeleteMediaList.length > 0){
+	       				 // Delete media
+	       				flagIsPlayListUpdated = true;
+	       				 
+	       				for (var i = 0; i < newDeleteMediaList.length; i++) {
+		             	    
+	             	        var path = "file://internal/" + newDeleteMediaList[i].toString();
+	             	        
+	             	       document.getElementById('output7').textContent = "File Path delete " + path;
+	             	        
+	             	    idcap.request("idcap://storage/file/remove", {
+	             	       
+	             	        "parameters": {
+	             	            "path":path,
+	             	            "recursive": false
+	             	        },
+	             	        "onSuccess": function () {
+	             	            console.log("Success");
+	             	           document.getElementById('output18').textContent = "All files deleted newDeleteMediaList"+newDeleteMediaList;
+	             	          downloadMediaFilesCheck();        
+	             	        },
+	             	        "onFailure": function (err) {
+	             	            console.log("onFailure : errorMessage = " + err.errorMessage);
+	             	           document.getElementById('output5').textContent = "Error in deleting files";
+	             	        }
+	             	    });
+	       				
+	       				}
+	       			 }else{
+	       				 
+	       				 // Normal flow
+	       				reCallMediaFileAPI();
+	       				 
+	       			 }
+	       			 
+	       		
+	       			 }
+	       	
+	 	   	      
+	 	        }else{
+	 	        	
+	 	        	console.log("req getMedia error");
+	 	        	reqToken();	
+	 	   }   
+	        	    
+	     	    	        	    	        	    	        	    
+	        } 
+	  else {
+	        	    console.error('mediaPlayList is not an array');
+	        	    // Call thread getMediaLIst
+	        }
+	         	       
+ } 
+catch (error) {
+	        console.error("Error fetching media files index:", error);
+	    }
+	    
+	  
+}
+
+
+
+ // Condition to check 
+
+function downloadMediaFilesCheck() {
+
+    
+  try {
+	         
+	        if(mediaDownloadList.length > 0){
+	    	  
+	    		downloadMediaInDevice()
+	 
+	        }else{
+    	    		// Play media
+	   	    flagIsMediaPlay=true;
+	   	    
+	   	 
+	   	  
+	   	   if(flagIsPlayListUpdated){
+    	     mediaPlayList.length = 0;
+	   	     mediaPlayList = updatedPlayList;
+	   	     flagIsPlayListUpdated = false
+	   	     mediaPlayIndex = 0;
+	   	   }
+	   	  
+          
+	   	   //reCallMediaFileAPI();
+	    	PlayMedia()
+	        //saveMediaFilesJson();
+	    	reCallMediaFileAPI();//Call thread every 5 seconds
+	    	
+	    	
+	    	}
+	         	         
+	  }
+	  
+  catch (error) {
+	        console.error('Error:', error.message);
+	    }
+} 
+// Thread call to call API reqGetMedialList() method in timeinterval.
+
+function reCallMediaFileAPI(){
+	count++;
+	
+	setTimeout(function() {
+		 document.getElementById('output6').textContent = "inside reCallMediaFileAPI" + count;
+        //reqGetMediaList();
+		
+		 
+    }, 5000); 		
+}
+
+// Download MediaFiles in Internal storage
+ 
+function downloadMediaInDevice(){
+
+	 //document.getElementById('output5').textContent = "inside downloadmedia"+mediaDownloadList;
+	
+  try{
+		  var sourceUrl = serverUrl+  mediaDownloadList[0].replace(/\\/g, "/"); 
+		  document.getElementById('output10').textContent = "sourceUrl::"+sourceUrl;
+		  console.log(sourceUrl);
+          var destinationUrl = 'file://internal/' + mediaDownloadList[0].replace("\\Repository\\Media\\", "");
+     	 document.getElementById('output12').textContent = "destinationurl::"+destinationUrl;
+            idcap.request("idcap://storage/file/download", {
+                "parameters": {
+                    "action": 'start',
+                    "source": sourceUrl,
+                    "destination": destinationUrl,
+                    "httpOption": {
+                        "maxRedirection": 5
+                    }
+                },
+         "onSuccess": function(cbObject) {                    
+        	      document.getElementById('output22').textContent = "Download sucesss sucess" ;
+                  mediaDownloadList.shift();
+                  downloadMediaFilesCheck();
+                 
+                },
+         "onFailure": function(err) {
+                    console.log("onFailure : errorMessage = " + err.errorMessage);
+                    document.getElementById('output22').textContent = "Downloaded failed" + err.errorMessage;
+                }
+            });
+     }catch(error){
+		  document.getElementById('output2').textContent = "failed to  download media in Internal storage of device"+error.errorMessage;
+	}	
+}      
+
+
+// Save Json Data in Json.txt file in Device.
+
+function saveMediaFilesJson() {
+		
+	var data = JSON.stringify(mediaFilesJson);
+	  document.getElementById('output3').textContent = "Inside downloaded MediaJson" + data;
+	
+	idcap.request("idcap://storage/file/write", {
+	  "parameters": {
+	    "data": data,
+	    "path": 'file://internal/DSS/Json.txt',
+	    "position": 0,
+	    "mode": 'truncate',
+	    "offset": 0,
+	    "length": data.length,
+	  },
+  "onSuccess": function(cbObject) {
+	    document.getElementById('output2').textContent = "Successfully downloaded MediaJson" + JSON.stringify(cbObject);
+	   
+	 },
+  "onFailure": function(err) {
+	    console.log("onFailure : errorMessage = " + err.errorMessage);
+	    document.getElementById('output5').textContent = ("onFailure : errorMessage =" + err.errorMessage);
+	 }
+	});
+}
+			
+
+//Read MediaFiles json Data
+
+function readMediaFilesJson(){
+	 	   
+	// This example will read file as text.
+	 idcap.request( "idcap://storage/file/read" , {
+	 "parameters": {
+	     "path" : "file://internal/DSS/Json.txt",
+	     "position" : 0,
+	 },
+	 "onSuccess": function (cbObject) {
+	     // If file is read as text, utf encoded string will be returned.
+	     // Create an image element, and set the source as the binary data.
+	     var data_text = cbObject.data;	
+	     try {
+	    	    //document.getElementById('output4').textContent = "data is" + data_text;
+
+	    	    const convertedJsonString = data_text.replace(/\\/g, "\\\\");
+	        	// Parse the JSON string into a JavaScript object
+	        	const jsonObject = JSON.parse(convertedJsonString);
+
+	        	// Convert mediaid and FileSizeKB from strings to numbers
+	        	mediaJsonArray = jsonObject.mediaList;
+	        	mediaJsonArray.forEach(function(media) {
+	        	    media.mediaid = parseInt(media.mediaid);
+	        	    media.FileSizeKB = parseFloat(media.FileSizeKB);
+	        	});
+
+	        	// Convert the modified JavaScript object back to a JSON string
+	        	const jsonString = JSON.stringify(jsonObject);
+
+	        	console.log(jsonString);
+
+	        	// Output the resulting array
+	        	console.log(mediaJsonArray);
+	        	//document.getElementById('output1').textContent = "data is in device " + JSON.stringify(mediaJsonArray);
+	        	jsonmediaJsonArray=mediaJsonArray;
+	        	findCommonElements(jsonmediaJsonArray, mediaDownloadList);
+	    	} 
+	 catch(exception) {
+	    	    document.getElementById('output2').textContent = "Error: " + exception.message;
+	    	}
+
+	     
+	     
+	     //fileListArray=array; 
+	  		 
+	  		//document.getElementById('output7').textContent = "Old Mediajson in Array" +mediaJsonArray;
+	  		
+	  		//PlayMedia(fileListArray, 0);
+	 },
+	 "onFailure": function (err) {
+	     console.log("onFailure : errorMessage = " + err.errorMessage);
+	     document.getElementById('output5').textContent = "failed to read filedata"+  err.errorMessage;
+	 }
+	 });
+	 
+}
+
+function PlayMedia() {
+    debugger;
+    var mediaContainer = document.getElementById('media-container');
+    mediaContainer.innerHTML = ''; // Clear previous content
+
+    // Create an iframe element
+    var iframehidden = document.createElement('iframe');
+    
+    // Set the iframe src to the play.html file
+    iframehidden.src = './content/play.html?scode=SC1&licencekey=0A0027000009&ver=1.0.0.15&Junk=78424bca-7609-4b69-8574-94903387dfaf&isdebug=false';
+    iframehidden.style.width = '0px'; // Hide iframe
+    iframehidden.style.height = '0px';
+    iframehidden.style.border = 'none'; // Hide the border if there's any
+
+    // Append the iframe to the body (or another container)
+    document.body.appendChild(iframehidden);
+
+    // Add an onload event to the iframe
+    iframehidden.onload = function() {
+        var iframeDoc = iframehidden.contentDocument || iframehidden.contentWindow.document;
+        
+        // Create a style element
+        var style = iframeDoc.createElement('style');
+        style.innerHTML = 'body { width: 100vw; overflow: hidden; }';
+        iframeDoc.head.appendChild(style);
+        
+        // Create the script for playButton click event
+        var script = iframeDoc.createElement('script');
+        script.type = 'text/javascript';
+        script.innerHTML = 
+            "document.getElementById('playButton').addEventListener('click', function() {" +
+            "    parent.postMessage({ command: 'playButtonClicked' }, '*');" +
+            "});";
+
+        // Append the script to the iframe document head
+        iframeDoc.head.appendChild(script);
+
+        console.log('play.html loaded successfully');
+        
+        // Optionally hide the iframe or perform other actions here
+        iframehidden.style.display = 'none';
+    };
+
+    // Listen for messages from the iframe
+    window.addEventListener('message', function(event) {
+        debugger;
+        var message = event.data;
+        mediaFilesJSonData = message.data;
+        console.log(mediaFilesJSonData);
+        console.log('Received message:', message);
+
+        if (message.command === 'mstObj') {
+            console.log(message);
+            var IsResync = message.data.Screen_Command.IsResync;
+            var IsRestart = message.data.Screen_Command.IsRestart; 
+            
+            if (IsResync || IsRestart) {
+                console.log("Device Restart");
+                restartDevice();
+            }
+            
+            if (message.command) {
+                switch (message.command) {
+                    case 'getMediaFilesCalled':
+                        console.log('Windows_getMediaFiles was called in play.html');
+                        reqGetMediaList(mediaFilesJSonData);
+                        break;
+                    // Add more cases for different commands if needed
+                    default:
+                        console.warn('Unknown command:', message.command);
+                        break;
+                }
+            }
+        }
+    }, false); // Closing the window event listener
+
+    // Start playing media
+    playNextMedia(); // Closing the function
+}
+
+    
+// Function to play the next media in the list
+function playNextMedia() {
+    debugger;
+    if (currentIndex >= jsonArrayMediaList.length) {
+        currentIndex = 0; // Loop back to the first media when the end is reached
+    }
+
+    var currentMedia = jsonArrayMediaList[currentIndex];
+    var fileName = currentMedia.mediaUrl.split('\\').pop(); // Extract the file name
+    
+    // Check if the iframe already exists, if not, create it
+    var iframe = document.getElementById('media-iframe');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'media-iframe'; // Assign an ID to reference it later
+    }
+
+    iframe.src = './content/' + fileName; // Set the iframe source to the new media file
+    
+    // Apply styles to make iframe full screen and disable scroll
+    iframe.style.width = '100vw'; // 100% of the viewport width
+    iframe.style.height = '100vh'; // 100% of the viewport height
+    iframe.style.border = 'none';  // Remove borders
+    iframe.scrolling = 'no'; // Disable scrolling (if necessary)
+    
+    var mediaContainer = document.getElementById('media-container');
+    mediaContainer.innerHTML = ''; 
+    
+    // Append the iframe to the media container
+    mediaContainer.appendChild(iframe);
+
+    // Set a timeout to switch to the next media after its duration
+    setTimeout(playNextMedia, currentMedia.duration * 1000); // duration is in seconds, so multiply by 1000
+
+    currentIndex++; // Move to the next media
+}
+
+
+// Play Playlist Media Files in loop from /content directory
+
+function PlayMedia1() {
+    debugger;
+    var mediaContainer = document.getElementById('media-container');
+    mediaContainer.innerHTML = ''; // Clear previous content
+    
+    var iframe = document.createElement('iframe');
+    iframe.id = 'myIframe'; // Set the id attribute
+    iframe.style.width = '100vw';
+    iframe.style.height = '100vh';
+    iframe.style.overflow = 'hidden';
+//    iframe.src = './content/play.html?scode=SC5&licencekey=0A0027000009&ver=1.0.0.15&Junk=78424bca-7609-4b69-8574-94903387dfaf&isdebug=false';
+//    
+    var imagelist=mediaFilesJson;
+    iframe.src = './content/a81496e2-b36c-45a6-b936-7af4fabb9760.png';
+
+    mediaContainer.appendChild(iframe);
+
+ 
+        
+    /*document.getElementById('output16').textContent =( "INSIDE Playmedia mediaPlayList list is " +mediaPlayList);
+    
+    if (mediaPlayIndex === undefined || mediaPlayIndex === null) {
+    	mediaPlayIndex = 0;
+    }
+
+    var mediaContainer = document.getElementById('media-container');
+    mediaContainer.innerHTML = ''; 
+    
+
+    if (mediaPlayIndex < mediaPlayList.length) {
+        var file = mediaPlayList[mediaPlayIndex].replace(/\\Repository\\Media\\/g, "");
+        document.getElementById('output').textContent = "INSIDE Playmedia " + file;
+        var extension = file.split('.').pop().toLowerCase();
+       
+       
+    if (extension === 'mp4') {
+            var video = document.createElement('video');
+            video.src = './content/' + file;
+            video.style.width = '100%';
+            video.style.height = '100%';
+             video.autoplay = true;
+            //video.controls = true;
+            mediaContainer.appendChild(video);
+
+            video.onended = function() {
+            	mediaPlayIndex++;
+                PlayMedia();
+            };
+         
+        } 
+    else if (extension === 'png'|| extension ==='jpeg'|| extension==='jpg') {
+            var img = document.createElement('img');
+            img.src = './content/' + file;            
+            img.style.width = '100%';
+            img.style.height = '100%';
+            mediaContainer.appendChild(img);
+
+            setTimeout(function() {
+            	mediaPlayIndex++;
+                PlayMedia();
+            }, 5000); 
+        }
+    }
+   else {
+	   mediaPlayIndex = 0;
+        PlayMedia();
+    }*/
+}
+
+// Get list of media downloaded in internal storage of signage device.
+
+function getInternalStorageList(){
+	 idcap.request( "idcap://storage/file/list" , {
+		 "parameters": {
+		     "path" : "file://internal"
+		     // List files in the internal memory
+		 },
+		 "onSuccess": function (cbObject) {
+		     console.log("cbObject : " + JSON.stringify(cbObject));
+		     //document.getElementById('output7').textContent="Json of file " +  JSON.stringify(cbObject) ;
+		     document.getElementById('output5').textContent="cbObject : " + JSON.stringify(cbObject);
+		     for (var i = 0; i < cbObject.fileList.length; i++) {
+		     if (cbObject.fileList[i].type === "F") {
+		    		fileListInternal.push(cbObject.fileList[i].name);
+		    		document.getElementById('output4').textContent="Filelist with Only F datatype " + fileListInternal ;
+             }
+		 }       	             			    	             			   
+			    
+		 },
+		 "onFailure": function (err) {
+		     console.log("onFailure : errorMessage = " + err.errorMessage);
+		     document.getElementById('output4').textContent="Downloaded failed" + err.errorMessage.toString();
+		 }
+		 });
+}
+
+
+//Download files from server
+
+function downloadJsFiles(){
+    var sourceUrl = "http://192.168.45.55:8082/ClientAppOffline/play.js"; 
+    var destinationUrl = 'file://internal/DSS/play.js'
+    document.getElementById('output12').textContent = "destinationurl::" + destinationUrl;
+
+    idcap.request("idcap://storage/file/download", {
+        "parameters": {
+            "action": 'start',
+            "source": sourceUrl,
+            "destination": destinationUrl,
+            
+            "httpOption": {
+                "maxRedirection": 5
+            }
+        },
+        "onSuccess": function(cbObject) {                    
+            document.getElementById('output22').textContent = "Download success";
+        },
+        "onFailure": function(err) {
+            console.log("onFailure : errorMessage = " + err.errorMessage);
+            document.getElementById('output22').textContent = "Download failed: " + err.errorMessage;
+        }
+    });
+}
+	
+      
+function readJsFiles(){
+	debugger
+	     idcap.request( "idcap://storage/file/read" , {
+		 "parameters": {
+		     "path" : "file://internal/DSS/play.js",
+		     "position" : 0,
+		 },
+		 "onSuccess": function (cbObject) {
+		     // If file is read as text, utf encoded string will be returned.
+		     // Create an image element, and set the source as the binary data.
+		     var data_text = cbObject.data;	
+		  try {
+		     document.getElementById('output1').textContent = "data is" + data_text;
+		     
+		      } catch(exception) {
+		    	    document.getElementById('output2').textContent = "Error: " + exception.message;
+		      }
+		     	    
+		 },
+		 "onFailure": function (err) {
+		     console.log("onFailure : errorMessage = " + err.errorMessage);
+		     document.getElementById('output4').textContent = "failed to read filedata"+  err.errorMessage;
+		 }
+		 });	
+}
+
+
+
+// Download server configuration Files play.html, play.js,play.css,play.jpg
+
+function downloadServerConfigFiles() {
+    try {
+    	    	debugger
+           	
+    	var removefile=[];
+        //var baseUrl =  serverUrl +'/ClientAppOffline/';
+        var baseUrl="http://192.168.45.55:8082/ClientAppOffline/"
+        console.log(baseUrl);
+
+        for (var i = 0; i < files.length; i++) {
+            var filename = files[i];
+            var sourceUrl = baseUrl + filename;
+            var destinationUrl = 'file://internal/' + filename;
+
+            idcap.request("idcap://storage/file/download", {
+                "parameters": {
+                    "action": 'start',
+                    "source": sourceUrl,
+                    "destination": destinationUrl,
+                    "httpOption": {
+                        "maxRedirection": 5
+                    }
+                },
+                "onSuccess": function(cbObject) {
+                    console.log("File Download Start for " + filename);
+                    document.getElementById('output4').textContent = "Download completed for " + filename;
+                    document.getElementById('output5').textContent = "Download completed for " + filename;
+                    document.getElementById('output6').textContent = "Download completed for " + filename;
+                    document.getElementById('output7').textContent = "Download completed for " + filename;
+                    console.log("Ticket: " + cbObject.ticket);
+                    files.shift();
+                    downloadServerFilesCheck();
+                   
+                },
+                "onFailure": function(err) {
+                    console.log("Download failed for " + filename + ": " + err.errorMessage);
+                    document.getElementById('output4').textContent = "Download failed for " + filename + ": " + err.errorMessage;
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error('Error:', error.message);
+    }
+}
+
+function downloadServerFilesCheck(){
+	
+	if(files.length>0){
+		
+		downloadServerConfigFiles();	
+	}
+	else{
+		 playFiles();	
+	}
+}
+
+
+function playFiles() {
+	debugger
+	var mediaContainer = document.getElementById('media-container');
+    mediaContainer.innerHTML = ''; // Clear previous content if needed
+
+   
+   iframe = document.createElement('iframe');
+    
+    iframe.id = 'myIframe'; // Set the id attribute
+    
+    
+    iframe.scrolling="no";
+    
+    
+    
+    iframe.style.width = '1920px';
+    iframe.style.height = '1080px';
+    iframe.style.border = 'none'; 
+ 
+
+    iframe.src = './content/play.html?scode=' + screenCode + '&licencekey=0A0027000009&ver=1.0.0.15&Junk=78424bca-7609-4b69-8574-94903387dfaf&isdebug=false';
+
+    
+    mediaContainer.appendChild(iframe);
+
+    iframe.onload = function() {
+        var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        var style = iframeDoc.createElement('style');
+        style.innerHTML = 'body { width: 100vw; overflow: hidden; }';
+        iframeDoc.head.appendChild(style);
+        var script = iframeDoc.createElement('script');
+        script.type = 'text/javascript';
+        "document.getElementById('playButton').addEventListener('click', function() {" +
+        "    parent.postMessage({ command: 'playButtonClicked' }, '*');" +
+        "});";
+
+
+        iframeDoc.head.appendChild(script);
+
+    };
+
+    window.addEventListener('message', function(event) {
+    	debugger
+        var message = event.data;
+    	mediaFilesJSonData=message.data;
+    	console.log(mediaFilesJSonData);
+        console.log('Received message:', message);
+        if (message.command) {
+            switch (message.command) {
+                case 'getMediaFilesCalled':
+                    console.log('Windows_getMediaFiles was called in play.html');
+                    reqGetMediaList(mediaFilesJSonData);
+                    // Call any function or perform any action here
+                    break;
+
+                // Add more cases for different commands if needed
+                default:
+                    console.warn('Unknown command:', message.command);
+                    break;
+            }
+        }
+      
+    }, false);
+        
+}
+
+function injectScript(iframe) {
+	debugger
+    var scriptContent =
+        "(function() {" +
+        "    var originalGetMediaFiles = window.getMediaFiles;" +
+        "    window.getMediaFiles = function() {" +
+        "        var code = getQueryStringValue('scode');" +
+        "        if (token == null) {" +
+        "            getToken();" +
+        "        }" +
+        "        $.ajax({" +
+        "            url: serverUrl + '/ScreenPL/PL_Media?ScreenCode=' + code," +
+        "            type: 'GET'," +
+        "            dataType: 'json'," +
+        "            cache: false," +
+        "            async: true," +
+        "            beforeSend: function(request) {" +
+        "                request.setRequestHeader('Authorization', 'bearer ' + token);" +
+        "            }," +
+        "            success: function(json) {" +
+        "                " +
+        "                parent.postMessage({ command: 'getMediaFilesCalled', data: json }, '*');" +
+        "            }," +
+        "            error: function(xhr, status, error) {" +
+        "                console.error('Error fetching media files:', error);" +
+        "                " +
+        "            }" +
+        "        });" +
+        "    };" +
+        "})();";
+    
+ 
+
+	    var script = document.createElement('script');
+	    script.type = 'text/javascript';
+	    script.text = scriptContent;
+
+	    var iframeDocument = iframe.contentWindow.document;
+	    iframeDocument.body.appendChild(script);
+	    
+    
+
+}
+
+
+////Listen for messages from play.html
+//window.addEventListener('message', function(event) {
+//    debugger;
+//   var message = event.data;
+//   
+//    if (message.command === 'mstObj') {
+//    	console.log(message);
+//   	var IsResync=message.data.Screen_Command.IsResync;
+//    	var IsRestart=message.data.Screen_Command.IsRestart;    	
+//   	if(IsResync || IsRestart ){
+//   		console.log("Device Restart");
+//   		restartDevice();
+//   	}
+//    	  
+//        } 
+//   else if (message.command=='getMediaFilesCalled') {
+//    	console.log('Windows_getMediaFiles was called in play.html',message);
+//        reqGetMediaList(message.data);
+//   }
+//    else if (message.data.command === 'playButtonClicked') {
+//           console.log('Play button was clicked in the iframe.');
+//        
+//    }else {
+//       console.log('Received message without command or mstObj:', message);
+//    }
+//}, false);
+
+
+// Method for restart signage device
+function restartDevice() {
+		
+		idcap.request( "idcap://power/command" , {
+		    "parameters": {
+		    "powerCommand" : "reboot"
+		    },
+		 "onSuccess": function () {
+		        console.log("onSuccess");
+		        },
+		 "onFailure": function (err) {
+		        console.log("onFailure : errorMessage = " + err.errorMessage);
+		    }
+		});
+}
+
+
+async function checkServerConfigFiles() {
+    debugger;
+    return new Promise(function(resolve, reject) {
+        idcap.request("idcap://storage/file/list", {
+            "parameters": {
+                "path": "file://internal" // List files in the internal memory
+            },
+            "onSuccess": function (cbObject) {
+                var configList = [];
+
+                // Iterate through file list
+                for (var i = 0; i < cbObject.fileList.length; i++) {
+                    if (cbObject.fileList[i].name === "play.html" || 
+                        cbObject.fileList[i].name === "play.css" || 
+                        cbObject.fileList[i].name === "play.js" || 
+                        cbObject.fileList[i].name === "play.jpg") {
+                        console.log("\ncbObject.fileList[i].name: " + cbObject.fileList[i].name);
+                        configList.push(cbObject.fileList[i].name);
+                    } else {
+                        console.log("\nFile not match");
+                    }
+                }
+
+                isServerFilesExist = configList.length > 0;
+                resolve(); // Resolve the promise
+            },
+            "onFailure": function (err) {
+                console.log("onFailure : errorMessage = " + err.errorMessage);
+                reject(err); // Reject the promise
+            }
+        });
+    });
+}

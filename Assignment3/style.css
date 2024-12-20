@@ -1,0 +1,13 @@
+
+table {
+    border-spacing: 30px;
+    border: 1px solid grey;
+  }
+
+  thead, tbody{
+    border: 2px solid grey;
+  }
+
+th, td {
+    padding: 15px;
+}

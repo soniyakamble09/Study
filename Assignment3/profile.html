@@ -1,0 +1,59 @@
+<html lang="en"></html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile</title>
+</head>
+<body>
+    <form method="POST" enctype="multipart/form-data">
+        <table align="center">
+            <caption style="caption-side: top; font-weight: bold; margin: 10px; text-align: center; ">Create Profile</caption>
+            <tbody>
+                <tr>
+                    <th align="center"><label for="fname">First Name: </label></th>
+                    <td>
+                        <input type="text" id="fname" placeholder="First Name" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th align="center"><label for="lname">Last Name: </label></th>
+                    <td>
+                        <input type="text" id="lname" placeholder="Last Name" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th align="center"><label for="dob">Date Of Birth: </label></th>
+                    <td>
+                        <input type="date" id="dob" name="dob" required />
+                    </td>
+                </tr>
+                <tr>
+                    <th align="center"><label for="age">Age: </label></th>
+                    <td>
+                        <input type="number" id="age" required>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="gender">Gender: </label></td>
+                    <td><input type="radio" id="male" name="gender" value="M" required /> <label for="male"> Male </label>
+                        <input type="radio" id="female" name="gender" value="F" required /> <label for="female"> Female </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="c_add">Current Address:</label></td>
+                    <td><textarea name="c_add" id="c_add" cols="40" rows="5"></textarea></td>
+                </tr>
+                <tr>
+                    <td><label for="p_add">Permanent Address:</label></td>
+                    <td><textarea name="p_add" id="p_add" cols="40" rows="5"></textarea></td>
+                </tr>
+                <tr>
+                    <th align="center" colspan="2">
+                        <input type="submit" id="submit" value="Create">
+                    </th>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</body>
+</html>
